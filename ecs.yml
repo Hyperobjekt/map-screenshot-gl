@@ -74,7 +74,7 @@ Resources:
       ContainerDefinitions:
       - Name: map-screenshot
         Essential: true
-        Image: hyperobjekt/map-screenshot-gl
+        Image: hyperobjekt/map-screenshot-gl@sha256:1a5b462509f7bf5f9a8a217378f88f1d8aaee777e1dd7eef4d93012acf2edbcc
         Cpu: '256'
         Memory: '300'
         LogConfiguration:
