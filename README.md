@@ -16,20 +16,15 @@ cd src
 npm install
 ```
 
-## Pushing builds to Docker Hub
+## Deploying builds to ECR and ECS
 
-https://hub.docker.com/r/hyperobjekt/map-screenshot-gl
+The deployment script builds a versioned image, pushes it to the AWS ECR
+repository, and updates the ECS CloudFormation stack.
 
-Build and tag the image id of the local build that you want to tag and push:
-
-```bash
-docker build -t hyperobjekt/map-screenshot-gl:latest .
-```
-
-Push the image to Docker Hub, e.g.:
+Configure an AWS profile with access to account `318011162599`, then run:
 
 ```bash
-docker push hyperobjekt/map-screenshot-gl:latest
+AWS_PROFILE=client-admin ./deploy.sh
 ```
 
 ## Updating the CloudFormation stack to deploy to ECS

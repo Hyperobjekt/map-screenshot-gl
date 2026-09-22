@@ -74,7 +74,7 @@ Resources:
       ContainerDefinitions:
       - Name: map-screenshot
         Essential: true
-        Image: hyperobjekt/map-screenshot-gl
+        Image: 318011162599.dkr.ecr.us-east-1.amazonaws.com/map-screenshot-gl:IMAGE_TAG
         Cpu: '256'
         Memory: '300'
         LogConfiguration:
@@ -290,7 +290,9 @@ Resources:
           - Effect: Allow
             Action: ['ecs:CreateCluster', 'ecs:DeregisterContainerInstance', 'ecs:DiscoverPollEndpoint',
               'ecs:Poll', 'ecs:RegisterContainerInstance', 'ecs:StartTelemetrySession',
-              'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents']
+              'ecs:Submit*', 'logs:CreateLogStream', 'logs:PutLogEvents',
+              'ecr:GetAuthorizationToken', 'ecr:BatchCheckLayerAvailability',
+              'ecr:GetDownloadUrlForLayer', 'ecr:BatchGetImage']
             Resource: '*'
   AutoscalingRole:
     Type: AWS::IAM::Role
