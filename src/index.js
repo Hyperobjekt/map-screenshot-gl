@@ -7,6 +7,9 @@ const request = require('request');
 const app = require('express')();
 const scales = require('./scales');
 
+const STYLE_URL = process.env.STYLE_URL || 'https://eviction-lab-map-v2.s3.us-east-1.amazonaws.com/map/assets/maps/style.json';
+const REQUEST_TIMEOUT_MS = 15000;
+
 const colors = ['rgba(226,64,0,0.8)', 'rgba(67,72,120,0.8)', 'rgba(44,137,127,0.8)'];
 
 const options = {
@@ -14,7 +17,8 @@ const options = {
         request({
             url: req.url.replace("%2b", "+"),
             encoding: null,
-            gzip: true
+            gzip: true,
+            timeout: REQUEST_TIMEOUT_MS
         }, (err, res, body) => {
             if (err) {
                 callback(err);
@@ -130,16 +134,27 @@ app.get('/', (req, res) => {
 // - http://localhost:3000/42.21/41.8/-87.7/-88.5/tracts/p-16/er-16/26/1
 app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     request({
-        url: 'https://evictionlab.org/tool/assets/style.json',
+        url: STYLE_URL,
+        timeout: REQUEST_TIMEOUT_MS,
     }, (err, styleRes, body) => {
         if (err) {
-            console.error(err);
-            res.status(500).send(err);
+            console.error(`Failed to load map style from ${STYLE_URL}:`, err);
+            res.status(502).send('Failed to load map style');
         } else {
             if (typeof styleRes === 'undefined') {
-                res.sendStatus(500);
+                console.error(`No response loading map style from ${STYLE_URL}`);
+                res.sendStatus(502);
+            } else if (styleRes.statusCode !== 200) {
+                console.error(`Map style returned HTTP ${styleRes.statusCode} from ${STYLE_URL}`);
+                res.status(502).send('Map style request failed');
             } else if (styleRes.statusCode === 200) {
-                const styleBody = JSON.parse(body);
+                let styleBody;
+                try {
+                    styleBody = JSON.parse(body);
+                } catch (parseErr) {
+                    console.error(`Invalid map style JSON from ${STYLE_URL}:`, parseErr);
+                    return res.status(502).send('Invalid map style response');
+                }
                 const map = new mbgl.Map(options);
                 const style = processMapStyle(styleBody, req.params);
                 map.load(style);
@@ -173,4 +188,5 @@ app.get('/:n/:s/:e/:w/:layer/:dataProp/:bubbleProp/:geoid/:idx', (req, res) => {
     });
 });
 
-app.listen(3000, () => console.log('Server running.'));
+const port = process.env.PORT || 3000;
+app.listen(port, () => console.log(`Server running on port ${port}.`));

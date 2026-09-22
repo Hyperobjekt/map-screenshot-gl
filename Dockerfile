@@ -1,7 +1,15 @@
 FROM node:10.24.1-slim
 
 ENV NODE_ENV="production"
-RUN apt-get -qq update \
+# Debian Stretch is EOL, so its package repositories now live in the
+# Debian archive rather than the normal mirrors.
+RUN sed -i \
+    -e 's|deb.debian.org/debian|archive.debian.org/debian|g' \
+    -e 's|security.debian.org/debian-security|archive.debian.org/debian-security|g' \
+    /etc/apt/sources.list \
+&& sed -i '/stretch-updates/d' /etc/apt/sources.list \
+&& printf 'Acquire::Check-Valid-Until "false";\n' > /etc/apt/apt.conf.d/99archive \
+&& apt-get -qq update \
 && DEBIAN_FRONTEND=noninteractive apt-get -y install \
     apt-transport-https \
     curl \
